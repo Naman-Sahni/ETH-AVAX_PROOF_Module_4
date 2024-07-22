@@ -1,61 +1,92 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.24;
 
-contract Degen {
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
-    uint256 public total_supply;
-    address public contract_owner;
-    string public token_name = "DEGEN";
-    string public token_symbol = "DGN";
-    uint8 public decimals = 18;
+contract DegenToken is ERC20, Ownable, ERC20Burnable {
 
-    constructor() {
-        contract_owner = msg.sender;
+    constructor() ERC20("Degen", "DGN") Ownable(msg.sender) {}
+
+    // Redeemable items
+    enum CardType { rare, super_rare, epic, mythic, legendary }
+
+    struct PurchaseRequest {
+        address buyer;
+        uint256 token_amount;
     }
 
-    mapping(address => uint256) public balances;
+    // Queue of purchase requests for buying degen tokens
+    PurchaseRequest[] public purchase_queue;
 
-    // Mint function
-    function mint_tokens(address recipient, uint256 amount) public {
-        require(msg.sender == contract_owner, "Only the contract owner can mint tokens.");
-        require(amount > 0, "Amount must be greater than 0.");
-
-        balances[recipient] += amount;
-        total_supply += amount;
+    struct PlayerCardCollection {
+        uint256 rare;
+        uint256 super_rare;
+        uint256 epic;
+        uint256 mythic;
+        uint256 legendary;        
     }
 
-    // Burn function
-    function burn_tokens(address from, uint256 amount) public {
-        require(amount <= balances[from], "Amount exceeds balance.");
+    // Mapping to store redeemed cards for each player
+    mapping(address => PlayerCardCollection) public player_card_collections;
 
-        balances[from] -= amount;
-        total_supply -= amount;
+    function request_purchase(address buyer, uint256 token_amount) public {
+        purchase_queue.push(PurchaseRequest({ buyer: buyer, token_amount: token_amount }));
     }
 
-    // Transfer function
-    function transfer_tokens(address to, uint256 amount) public {
-        require(amount <= balances[msg.sender], "Amount exceeds balance.");
-        require(to != address(0), "Cannot transfer to the zero address.");
-
-        balances[msg.sender] -= amount;
-        balances[to] += amount;
-    }
-
-    // Redeem function
-    function redeem_tokens(address recipient, uint256 amount, uint256 game_item) public { 
-        require(amount <= balances[recipient], "Amount exceeds balance");
-
-        if (game_item == 1) {
-            require(amount >= 50, "Insufficient tokens for Game Item 1");
-            burn_tokens(recipient, amount);
-        } else if (game_item == 2) {
-            require(amount >= 100, "Insufficient tokens for Game Item 2");
-            burn_tokens(recipient, amount);
-        } else if (game_item == 3) {
-            require(amount >= 200, "Insufficient tokens for Game Item 3");
-            burn_tokens(recipient, amount);
-        } else {
-            revert("Invalid game item");
+    // Mint tokens for the buyers in the queue
+    function mint_tokens() public onlyOwner {
+        // Loop to mint tokens for buyers in queue
+        while (purchase_queue.length != 0) {
+            uint256 index = purchase_queue.length - 1;
+            if (purchase_queue[index].buyer != address(0)) { // Check for non-zero address
+                _mint(purchase_queue[index].buyer, purchase_queue[index].token_amount);
+                purchase_queue.pop();
+            }
         }
-    } 
+    }
+    
+    // Transfer tokens to another player
+    function transfer_tokens(address recipient, uint256 token_amount) public {
+        require(token_amount <= balanceOf(msg.sender), "Insufficient token balance");
+        _transfer(msg.sender, recipient, token_amount);
+    }
+
+    // Redeem different cards
+    function redeem_card(CardType card_type) public {
+        if (card_type == CardType.rare) {
+            require(balanceOf(msg.sender) >= 10, "Insufficient tokens for rare card");
+            player_card_collections[msg.sender].rare += 1;
+            burn(10);
+        } else if (card_type == CardType.super_rare) {
+            require(balanceOf(msg.sender) >= 20, "Insufficient tokens for super rare card");
+            player_card_collections[msg.sender].super_rare += 1;
+            burn(20);
+        } else if (card_type == CardType.epic) {
+            require(balanceOf(msg.sender) >= 30, "Insufficient tokens for epic card");
+            player_card_collections[msg.sender].epic += 1;
+            burn(30);
+        } else if (card_type == CardType.mythic) {
+            require(balanceOf(msg.sender) >= 40, "Insufficient tokens for mythic card");
+            player_card_collections[msg.sender].mythic += 1;
+            burn(40);
+        } else if (card_type == CardType.legendary) {
+            require(balanceOf(msg.sender) >= 50, "Insufficient tokens for legendary card");
+            player_card_collections[msg.sender].legendary += 1;
+            burn(50);
+        } else {
+            revert("Invalid card type selected");
+        }
+    }
+
+    // Function to burn tokens
+    function burn_tokens(address account, uint256 amount) public {
+        _burn(account, amount);
+    }
+
+    // Function to check the token balance of the caller
+    function check_balance() public view returns (uint256) {
+        return balanceOf(msg.sender);
+    }
 }
