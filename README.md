@@ -2,54 +2,74 @@
 Module 4 Project: Degen Token (ERC-20): Unlocking the Future of Gaming
 
 
-# DEGEN Token Contract
-
-This Solidity smart contract implements a basic ERC-20 token named DEGEN (DGN). It allows for token minting, burning, transferring, and redeeming based on specified game items.
+# DegenToken Smart Contract
 
 ## Overview
 
-- **Token Name:** DEGEN
-- **Token Symbol:** DGN
-- **Decimals:** 18
+`DegenToken` is an ERC20 token with additional functionalities for purchasing, transferring, and redeeming tokens for collectible cards. The contract uses OpenZeppelin's libraries for secure and standard implementations.
 
-## Features
+## Contract Details
 
-1. **Minting Tokens:**
-   - Only the contract owner can mint new tokens.
-   - Tokens are minted and added to the recipient's balance.
+### Inheritance
 
-2. **Burning Tokens:**
-   - Tokens can be burned from a specified address.
-   - Ensures the amount burned does not exceed the address's balance.
+- **ERC20**: Standard ERC20 token functionalities.
+- **Ownable**: Exclusive access to certain functions for the contract owner.
+- **ERC20Burnable**: Enables burning of tokens.
 
-3. **Transferring Tokens:**
-   - Allows tokens to be transferred between addresses.
-   - Checks that the sender has sufficient balance and that the recipient address is valid.
+### Constructor
 
-4. **Redeeming Tokens for Game Items:**
-   - Tokens can be redeemed based on specified game item requirements.
-   - Validates the amount of tokens against the requirements of each game item before burning them.
+Initializes the token with the name "Degen" and symbol "DGN", and sets the deployer as the owner.
 
-## Usage
+### Enums and Structs
 
-To deploy the contract:
-- Deploy the contract using a Solidity compiler that supports version ^0.8.18 or compatible.
+- **CardType**: Types of redeemable cards (`rare`, `super_rare`, `epic`, `mythic`, `legendary`).
+- **PurchaseRequest**: Contains the buyer's address and token amount.
+- **PlayerCardCollection**: Tracks the number of each type of card a player has.
+
+### State Variables
+
+- **purchase_queue**: Array of `PurchaseRequest` structs, representing token purchase requests.
+- **player_card_collections**: Mapping of player addresses to their card collections.
 
 ### Functions
 
-- **mint_tokens(address recipient, uint256 amount):** Allows the contract owner to mint tokens and assign them to a recipient.
-- **burn_tokens(address from, uint256 amount):** Burns tokens from a specified address.
-- **transfer_tokens(address to, uint256 amount):** Transfers tokens from the sender's address to a specified address.
-- **redeem_tokens(address recipient, uint256 amount, uint256 game_item):** Redeems tokens based on game item requirements, burning them from the recipient's address.
+- `request_purchase(address buyer, uint256 token_amount)`: Adds a purchase request to the queue.
+- `mint_tokens() public onlyOwner`: Mints tokens for players in the queue. Only callable by the owner.
+- `transfer_tokens(address recipient, uint256 token_amount)`: Transfers tokens to another address.
+- `redeem_card(CardType card_type)`: Redeems tokens for cards, burning the tokens in the process.
+- `burn_tokens(address account, uint256 amount)`: Burns tokens from a specific address.
+- `check_balance() public view returns (uint256)`: Returns the caller's token balance.
 
-## Deployment
+## Example Usage
 
-Deploy the contract on a compatible Ethereum network using tools like Remix, Truffle, or Hardhat.
+1. **Requesting Token Purchase:**
+    ```solidity
+    DegenToken.request_purchase(playerAddress, amount);
+    ```
 
-## Security Considerations
+2. **Minting Tokens:**
+    ```solidity
+    DegenToken.mint_tokens();
+    ```
 
-- Ensure only trusted parties have access to the contract owner's private key to prevent unauthorized minting.
-- Use proper access control mechanisms and thoroughly test all contract interactions before deployment.
+3. **Transferring Tokens:**
+    ```solidity
+    DegenToken.transfer_tokens(recipientAddress, amount);
+    ```
 
+4. **Redeeming Cards:**
+    ```solidity
+    DegenToken.redeem_card(DegenToken.CardType.rare);
+    ```
+
+5. **Burning Tokens:**
+    ```solidity
+    DegenToken.burn_tokens(playerAddress, amount);
+    ```
+
+6. **Checking Balance:**
+    ```solidity
+    uint256 balance = DegenToken.check_balance();
+    ```
 
 
