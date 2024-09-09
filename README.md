@@ -1,75 +1,44 @@
-# ETH-AVAX_PROOF_Module_4
-Module 4 Project: Degen Token (ERC-20): Unlocking the Future of Gaming
+# Eth-intermediate-module-4
+*Aim of the Project*
+Create an ERC20 token and deploy it on the Avalanche network for Degen Gaming. It consists of minting, burning, transferring, redeeming tokens, and checking the account balance.
 
 
-# DegenToken Smart Contract
+*Logic of the code*
 
-## Overview
+1. Write the license identifier and solidity version.
 
-`DegenToken` is an ERC20 token with additional functionalities for purchasing, transferring, and redeeming tokens for collectible cards. The contract uses OpenZeppelin's libraries for secure and standard implementations.
+2. Import the open Zeppelin contracts and hardhat/console.sol dependencies.
 
-## Contract Details
+3. Create a contract named as DegenToken which is Ownable and ERC20Burnable.
 
-### Inheritance
+4. It consists of a constructor which defines the name and symbol of the token as "Degen Token" and "DGN " respectively.
 
-- **ERC20**: Standard ERC20 token functionalities.
-- **Ownable**: Exclusive access to certain functions for the contract owner.
-- **ERC20Burnable**: Enables burning of tokens.
+5. The function mint_tokens consists of minting a specific amount to a particular address. It is declared public so that it can be accessed outside the contract.
 
-### Constructor
+6. The transfer_Token function takes the receiver's address and amount to be transferred as its parameters. It has a require statement that confirms that the balance of the sender should be greater than or equal to the amount to be transferred else the string message is returned. If the condition returns to true, then the approve  and transferFrom  function transfers the tokens(amount) from the sender to the receiver.
 
-Initializes the token with the name "Degen" and symbol "DGN", and sets the deployer as the owner.
+7. The getBalance function is declared external and returns the unsigned int value of the valance in the sender's account/address.
 
-### Enums and Structs
+8. The burn_Tokens take the unsigned int value of the amount as its parameter. It is declared as external. The require statement checks that the balance of the sender should be greater than or equal to the amount to be transferred else the string message is returned. If the condition returns to the true, then the burn function burns the specific amount of tokens from the sender's account.
 
-- **CardType**: Types of redeemable cards (`rare`, `super_rare`, `epic`, `mythic`, `legendary`).
-- **PurchaseRequest**: Contains the buyer's address and token amount.
-- **PlayerCardCollection**: Tracks the number of each type of card a player has.
+9. The redeem_Tokens is declared public and pure. It returns the five rewards(strings) which will be redeemed if the conditions are satisfied.
 
-### State Variables
+10. The user enters a particular number. The require statement checks that the entered number should be less than the total number of the choices provided, if yes then the condition matching with the choice is executed and that particular numbered reward is redeemed by paying the listed tokens.
 
-- **purchase_queue**: Array of `PurchaseRequest` structs, representing token purchase requests.
-- **player_card_collections**: Mapping of player addresses to their card collections.
+*Functionality of the code*
 
-### Functions
+1. Open the Remix IDE(https://remix.ethereum.org) and clone the repository provided in the module.
 
-- `request_purchase(address buyer, uint256 token_amount)`: Adds a purchase request to the queue.
-- `mint_tokens() public onlyOwner`: Mints tokens for players in the queue. Only callable by the owner.
-- `transfer_tokens(address recipient, uint256 token_amount)`: Transfers tokens to another address.
-- `redeem_card(CardType card_type)`: Redeems tokens for cards, burning the tokens in the process.
-- `burn_tokens(address account, uint256 amount)`: Burns tokens from a specific address.
-- `check_balance() public view returns (uint256)`: Returns the caller's token balance.
+2. Open the contacts folder and write the above code.
 
-## Example Usage
+3. Compile the DegenToken.sol contract.
 
-1. **Requesting Token Purchase:**
-    ```solidity
-    DegenToken.request_purchase(playerAddress, amount);
-    ```
+4. In the deploy section, select Injected Provider environment which will help us to connect with the metamask.
 
-2. **Minting Tokens:**
-    ```solidity
-    DegenToken.mint_tokens();
-    ```
+5. Paste the address of the account currently running in the meta mask in the At Address section.
 
-3. **Transferring Tokens:**
-    ```solidity
-    DegenToken.transfer_tokens(recipientAddress, amount);
-    ```
+6. Open the deployed contract. Run different functions of minting, burning, transferring, redeeming tokens, and checking the account balance.
 
-4. **Redeeming Cards:**
-    ```solidity
-    DegenToken.redeem_card(DegenToken.CardType.rare);
-    ```
+7. Verify the transactions by pasting the same address in the Snowtrace Testnet site.(https://testnet.snowtrace.io)
 
-5. **Burning Tokens:**
-    ```solidity
-    DegenToken.burn_tokens(playerAddress, amount);
-    ```
-
-6. **Checking Balance:**
-    ```solidity
-    uint256 balance = DegenToken.check_balance();
-    ```
-
-
+8. If all the tests are passed, then the contract has successfully followed every requirement of the project.
